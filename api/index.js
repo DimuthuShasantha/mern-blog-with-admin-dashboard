@@ -22,7 +22,17 @@ mongoose
     console.log(error.message);
   });
 
-  
 /* ROUTES */
-app.use('/api/user', userRoutes);
-app.use('/api/auth', authRoutes);
+app.use("/api/user", userRoutes);
+app.use("/api/auth", authRoutes);
+
+/* ERROR MIDDLEWARE */
+app.use((err, req, res, next) => {
+  const statusCode = err.statusCode || 500;
+  const message = err.message || "Internel Server Error!";
+  res.status(statusCode).json({
+    success: false,
+    statusCode,
+    message,
+  });
+});
