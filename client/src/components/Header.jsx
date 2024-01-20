@@ -6,12 +6,12 @@ import { FaMoon } from "react-icons/fa6";
 export default function Header() {
   const path = useLocation().pathname;
   return (
-    <Navbar className=" border-b-2">
+    <Navbar className="border-b-2 ">
       <Link
         to="/"
-        className="self-center whitespace-nowrap text-sm sm:text-md font-semibold dark:text-white"
+        className="self-center text-sm font-semibold whitespace-nowrap sm:text-md dark:text-white"
       >
-        <span className="px-2 py-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-lg text-white">
+        <span className="px-2 py-1 text-white rounded-lg bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
           Dimu's
         </span>
         Blog
@@ -28,10 +28,10 @@ export default function Header() {
         <AiOutlineSearch />
       </Button>
       <div className="flex gap-2 md:order-2">
-        <Button className="hidden sm:inline h-10 w-12" color="gray" pill>
+        <Button className="hidden w-12 h-10 sm:inline" color="gray" pill>
           <FaMoon />
         </Button>
-        <Link>
+        <Link to="/signin">
           <Button gradientDuoTone="purpleToBlue" outline>
             Sign In
           </Button>
