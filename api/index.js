@@ -1,6 +1,7 @@
 import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv/config";
+import userRoutes from "./routes/user.route.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -19,3 +20,5 @@ mongoose
   .catch((error) => {
     console.log(error.message);
   });
+
+app.use('/api/user', userRoutes);
