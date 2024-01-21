@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button, Label, TextInput, Alert, Spinner } from "flowbite-react";
 import { HiInformationCircle } from "react-icons/hi";
 import { useState } from "react";
+import OAuth from "../components/OAuth";
 
 export default function Signup() {
   const [formData, setFormData] = useState({});
@@ -93,6 +94,7 @@ export default function Signup() {
                 "Sign up"
               )}
             </Button>
+            <OAuth />
           </form>
           <div className="flex justify-center gap-2 mt-3 text-sm">
             <span>Have an account?</span>
