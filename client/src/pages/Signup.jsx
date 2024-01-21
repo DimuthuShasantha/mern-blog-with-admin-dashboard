@@ -39,7 +39,7 @@ export default function Signup() {
   return (
     <div className="min-h-screen mt-20 ">
       <div className="flex flex-col max-w-3xl gap-5 mx-auto md:flex-row md:items-center">
-        <div className="flex-1">
+        <div className="flex-1 px-4">
           <Link to="/" className="text-4xl font-bold dark:text-white">
             <span className="px-2 py-1 text-white rounded-lg bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
               Dimu's
@@ -51,7 +51,7 @@ export default function Signup() {
             quidem ratione optio !
           </p>
         </div>
-        <div className="flex-1">
+        <div className="flex-1 px-4">
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
               <Label value="Your Username" />
