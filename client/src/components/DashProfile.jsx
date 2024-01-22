@@ -1,6 +1,7 @@
-import { Alert, Button, Modal, TextInput } from "flowbite-react";
+import { Alert, Button, Modal, Spinner, TextInput } from "flowbite-react";
 import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 import {
   getDownloadURL,
   getStorage,
@@ -21,12 +22,12 @@ import {
   deleteUserStart,
   deleteUserFaluire,
   signOutSuccess,
-  signOutFaluire
+  signOutFaluire,
 } from "../redux/user/userSlice";
 import { useDispatch } from "react-redux";
 
 export default function DashProfile() {
-  const { currentUser, error } = useSelector((state) => state.user);
+  const { currentUser, error, loading } = useSelector((state) => state.user);
   const [imageFile, setImageFile] = useState(null);
   const [imageFileUrl, setImageFileUrl] = useState(null);
   const [imageFileUploadProgress, setImageFileUploadProgress] = useState(null);
@@ -145,7 +146,7 @@ export default function DashProfile() {
     try {
       const res = await fetch("/api/user/signout");
       const data = await res.json();
-      if(!res.ok) {
+      if (!res.ok) {
         dispatch(signOutFaluire(data.message));
       } else {
         dispatch(signOutSuccess(data));
@@ -153,7 +154,7 @@ export default function DashProfile() {
     } catch (error) {
       dispatch(signOutFaluire(data.message));
     }
-  }
+  };
 
   return (
     <div className="w-full max-w-lg p-3 mx-auto">
@@ -230,15 +231,40 @@ export default function DashProfile() {
           placeholder="**********"
           onChange={handleChange}
         />
-        <Button type="submit" gradientDuoTone="purpleToBlue" outline>
-          Update
+        <Button
+          type="submit"
+          gradientDuoTone="purpleToBlue"
+          outline
+          disabled={loading || imageFileUploading}
+        >
+          {loading ? (
+            <>
+              <Spinner size="sm" />
+              <span className="pl-3">Loading...</span>
+            </>
+          ) : (
+            "Update"
+          )}
         </Button>
+        {currentUser.isAdmin && (
+          <Link to="/create-post">
+            <Button
+              type="button"
+              gradientDuoTone={"purpleToPink"}
+              className="w-full"
+            >
+              Create Post
+            </Button>
+          </Link>
+        )}
       </form>
       <div className="flex justify-between mt-5 text-red-500">
         <span onClick={() => setOpenModal(true)} className="cursor-pointer">
           Delete Account
         </span>
-        <span onClick={handleSignOut} className="cursor-pointer">Sign Out</span>
+        <span onClick={handleSignOut} className="cursor-pointer">
+          Sign Out
+        </span>
       </div>
       {updateUserSuccess && (
         <Alert color="success" icon={FaCircleCheck} className="mt-5">
