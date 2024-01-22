@@ -1,4 +1,4 @@
-import { Alert, Button, TextInput } from "flowbite-react";
+import { Alert, Button, Modal, TextInput } from "flowbite-react";
 import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import {
@@ -9,18 +9,22 @@ import {
 } from "firebase/storage";
 import { app } from "../firebase";
 import { HiInformationCircle } from "react-icons/hi";
-import { FaCircleCheck } from "react-icons/fa6";
+import { FaCircleCheck, FaCircleExclamation } from "react-icons/fa6";
+import { FaExclamationCircle } from "react-icons/fa";
 import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import {
   updateFaluire,
   updateStart,
   updateSuccess,
+  deleteUserSuccess,
+  deleteUserStart,
+  deleteUserFaluire,
 } from "../redux/user/userSlice";
 import { useDispatch } from "react-redux";
 
 export default function DashProfile() {
-  const { currentUser } = useSelector((state) => state.user);
+  const { currentUser, error } = useSelector((state) => state.user);
   const [imageFile, setImageFile] = useState(null);
   const [imageFileUrl, setImageFileUrl] = useState(null);
   const [imageFileUploadProgress, setImageFileUploadProgress] = useState(null);
@@ -28,6 +32,7 @@ export default function DashProfile() {
   const [imageFileUploading, setImageFileUploading] = useState(false);
   const [updateUserSuccess, setUpdateUserSuccess] = useState(null);
   const [updateUserError, setUpdateUserError] = useState(null);
+  const [openModal, setOpenModal] = useState(false);
   const filePickerRef = useRef();
   const [formData, setFormData] = useState({});
   const dispatch = useDispatch();
@@ -86,14 +91,14 @@ export default function DashProfile() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setUpdateUserError(null);
-    setUpdateUserSuccess(null)
+    setUpdateUserSuccess(null);
     if (Object.keys(formData).length === 0) {
       setUpdateUserError("No changes made!");
       return;
     }
     if (imageFileUploading) {
-      setUpdateUserError("Please wait for image to upload!"); 
-      return; 
+      setUpdateUserError("Please wait for image to upload!");
+      return;
     }
     try {
       dispatch(updateStart());
@@ -116,9 +121,27 @@ export default function DashProfile() {
     }
   };
 
+  const handleDeleteUser = async () => {
+    setOpenModal(false);
+    try {
+      dispatch(deleteUserStart());
+      const res = await fetch(`/api/user/delete/${currentUser._id}`, {
+        method: "DELETE",
+      });
+      const data = res.json();
+      if (!res.ok) {
+        dispatch(deleteUserFaluire(data.message));
+      } else {
+        dispatch(deleteUserSuccess(data));
+      }
+    } catch (error) {
+      dispatch(deleteUserFaluire(error.message));
+    }
+  };
+
   return (
-    <div className="max-w-lg mx-auto p-3 w-full">
-      <h1 className="my-7 text-center font-semibold text-3xl">Profile</h1>
+    <div className="w-full max-w-lg p-3 mx-auto">
+      <h1 className="text-3xl font-semibold text-center my-7">Profile</h1>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input
           type="file"
@@ -128,7 +151,7 @@ export default function DashProfile() {
           hidden
         />
         <div
-          className="relative w-32 h-32 self-center cursor-pointer shadow-md overflow-hidden rounded-full"
+          className="relative self-center w-32 h-32 overflow-hidden rounded-full shadow-md cursor-pointer"
           onClick={() => filePickerRef.current.click()}
         >
           {imageFileUploadProgress && (
@@ -195,8 +218,10 @@ export default function DashProfile() {
           Update
         </Button>
       </form>
-      <div className="mt-5 flex justify-between text-red-500">
-        <span className="cursor-pointer">Delete Account</span>
+      <div className="flex justify-between mt-5 text-red-500">
+        <span onClick={() => setOpenModal(true)} className="cursor-pointer">
+          Delete Account
+        </span>
         <span className="cursor-pointer">Sign Out</span>
       </div>
       {updateUserSuccess && (
@@ -209,6 +234,35 @@ export default function DashProfile() {
           <span className="font-medium">{updateUserError}</span>
         </Alert>
       )}
+      {error && (
+        <Alert color="failure" icon={HiInformationCircle} className="mt-5">
+          <span className="font-medium">{error}</span>
+        </Alert>
+      )}
+      <Modal
+        show={openModal}
+        onClose={() => setShowModal(false)}
+        popup
+        size="md"
+      >
+        <Modal.Header />
+        <Modal.Body>
+          <div className="text-center">
+            <FaCircleExclamation className="mx-auto mb-4 text-gray-400 w-14 h-14 dark:text-gray-200" />
+            <h3 className="mb-5 text-lg text-gray-500 dark:text-gray-400">
+              Are you sure want to delete your account?
+            </h3>
+            <div className="flex justify-center gap-4">
+              <Button color="failure" onClick={handleDeleteUser}>
+                Yes, I am sure
+              </Button>
+              <Button color="gray" onClick={() => setOpenModal(false)}>
+                No, Cancel
+              </Button>
+            </div>
+          </div>
+        </Modal.Body>
+      </Modal>
     </div>
   );
 }
