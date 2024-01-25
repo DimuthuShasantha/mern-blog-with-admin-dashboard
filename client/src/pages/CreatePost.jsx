@@ -1,35 +1,129 @@
-import { Button, FileInput, Select, TextInput } from "flowbite-react";
-import { useState } from 'react';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+import {
+  Alert,
+  Button,
+  FileInput,
+  Select,
+  Spinner,
+  TextInput,
+} from "flowbite-react";
+import { useState } from "react";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
+import {
+  getDownloadURL,
+  getStorage,
+  ref,
+  uploadBytesResumable,
+} from "firebase/storage";
+import { app } from "../firebase";
+import { HiInformationCircle } from "react-icons/hi";
 
 export default function CreatePost() {
+  const [file, setFile] = useState(null);
+  const [imageUploadProgress, setImageUploadProgress] = useState(null);
+  const [imageUploadError, setImageUploadError] = useState(null);
+  const [formData, setFormData] = useState({});
+  const handleUploadImage = async () => {
+    try {
+      if (!file) {
+        setImageUploadError("Please select an image!")
+      };
+      setImageUploadError(null);
+      const storage = getStorage(app);
+      const fileName = new Date().getTime() + "-" + file.mame;
+      const storageRef = ref(storage, fileName);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          const progress =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          setImageUploadProgress(progress.toFixed(0));
+        },
+        (error) => {
+          setImageUploadError("Image must be less than 2MB!");
+          setImageUploadProgress(null);
+        },
+        () => {
+          getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+            setImageUploadError(null);
+            setImageUploadProgress(null);
+            setFormData({ ...formData, image: downloadURL });
+          });
+        }
+      );
+    } catch (error) {
+      setImageUploadError("Image upload faild!");
+      setImageUploadProgress(null);
+    }
+  };
   return (
     <div className="max-w-3xl min-h-screen p-3 mx-auto">
       <h1 className="text-3xl font-semibold text-center my-7">Create a Post</h1>
       <form className="flex flex-col gap-4">
         <div className="flex flex-col gap-4 sm:flex-row">
-            <TextInput
-                type="text"
-                placeholder="Title"
-                id="title"
-                className="flex-1"
-                required
-            />
-            <Select>
-              <option value="uncategorized">Select a Category</option>  
-              <option value="javascript">JavaScript</option>    
-              <option value="reactjs">React.js</option>    
-              <option value="next14">Next 14</option>    
-            </Select>
+          <TextInput
+            type="text"
+            placeholder="Title"
+            id="title"
+            className="flex-1"
+            required
+          />
+          <Select>
+            <option value="uncategorized">Select a Category</option>
+            <option value="javascript">JavaScript</option>
+            <option value="reactjs">React.js</option>
+            <option value="next14">Next 14</option>
+          </Select>
         </div>
-        <div className="flex items-center justify-center gap-4 p-3 border-4 border-teal-500 border-dotted">
-            <FileInput type="file" accept="image/*" />
-            <Button type="button" size="sm" gradientDuoTone="purpleToBlue" outline>Upload Image</Button>
+        <div className="flex items-center justify-between gap-4 p-3 border-4 border-teal-500 border-dotted">
+          <FileInput
+            type="file"
+            accept="image/*"
+            onChange={(e) => setFile(e.target.files[0])}
+          />
+          <Button
+            type="button"
+            size="sm"
+            gradientDuoTone="purpleToBlue"
+            outline
+            onClick={handleUploadImage}
+            disabled={imageUploadProgress}
+          >
+            {imageUploadProgress ? (
+              <>
+                <Spinner size="sm" />
+                {`${imageUploadProgress || 0}%`}
+                <span className="px-2">Uploading...</span>
+              </>
+            ) : (
+              "Upload Image"
+            )}
+          </Button>
         </div>
-        <ReactQuill theme="snow" placeholder="Write something..." className="mb-12 h-72" required />
-        <Button type="submit" gradientDuoTone={"purpleToPink"} >Publish</Button>
+        {formData.image && (
+          <img src={formData.image}
+          className="w-full h-72 object-cover" alt="upload image" />
+        )}
+        {imageUploadError && (
+          <Alert
+            className="py-3 mt-5"
+            color="failure"
+            icon={HiInformationCircle}
+          >
+            {imageUploadError}
+          </Alert>
+        )}
+        <ReactQuill
+          theme="snow"
+          placeholder="Write something..."
+          className="mb-12 h-72"
+          required
+        />
+        <Button type="submit" gradientDuoTone={"purpleToPink"}>
+          Publish
+        </Button>
       </form>
     </div>
-  )
+  );
 }
