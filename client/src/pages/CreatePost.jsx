@@ -17,17 +17,23 @@ import {
 } from "firebase/storage";
 import { app } from "../firebase";
 import { HiInformationCircle } from "react-icons/hi";
+import { useSelector } from "react-redux";
+import { Navigate, useNavigate } from "react-router-dom";
 
 export default function CreatePost() {
   const [file, setFile] = useState(null);
   const [imageUploadProgress, setImageUploadProgress] = useState(null);
   const [imageUploadError, setImageUploadError] = useState(null);
   const [formData, setFormData] = useState({});
+  const [publishError, setPublishError] = useState(null);
+  const [publish, setPublish] = useState(false);
+  const navigate = useNavigate();
+  const { currentUser } = useSelector((state) => state.user);
   const handleUploadImage = async () => {
     try {
       if (!file) {
-        setImageUploadError("Please select an image!")
-      };
+        setImageUploadError("Please select an image!");
+      }
       setImageUploadError(null);
       const storage = getStorage(app);
       const fileName = new Date().getTime() + "-" + file.mame;
@@ -57,10 +63,35 @@ export default function CreatePost() {
       setImageUploadProgress(null);
     }
   };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setPublish(true);
+      setPublishError(null);
+      const res = await fetch("/api/post/create", {
+        method: "POST",
+        headers: { "Content-type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setPublishError(data.message);
+        setPublish(false);
+        return;
+      } else {
+        setPublish(false);
+        navigate(`/post/${data.slug}`);
+      }
+    } catch (error) {
+      setPublishError(error.message);
+      setPublish(false);
+    }
+  };
   return (
     <div className="max-w-3xl min-h-screen p-3 mx-auto">
       <h1 className="text-3xl font-semibold text-center my-7">Create a Post</h1>
-      <form className="flex flex-col gap-4">
+      <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
         <div className="flex flex-col gap-4 sm:flex-row">
           <TextInput
             type="text"
@@ -68,8 +99,15 @@ export default function CreatePost() {
             id="title"
             className="flex-1"
             required
+            onChange={(e) =>
+              setFormData({ ...formData, title: e.target.value })
+            }
           />
-          <Select>
+          <Select
+            onChange={(e) =>
+              setFormData({ ...formData, category: e.target.value })
+            }
+          >
             <option value="uncategorized">Select a Category</option>
             <option value="javascript">JavaScript</option>
             <option value="reactjs">React.js</option>
@@ -102,8 +140,11 @@ export default function CreatePost() {
           </Button>
         </div>
         {formData.image && (
-          <img src={formData.image}
-          className="w-full h-72 object-cover" alt="upload image" />
+          <img
+            src={formData.image}
+            className="w-full h-72 object-cover"
+            alt="upload image"
+          />
         )}
         {imageUploadError && (
           <Alert
@@ -119,10 +160,31 @@ export default function CreatePost() {
           placeholder="Write something..."
           className="mb-12 h-72"
           required
+          onChange={(value) => setFormData({ ...formData, content: value })}
         />
-        <Button type="submit" gradientDuoTone={"purpleToPink"}>
-          Publish
+        <Button
+          type="submit"
+          gradientDuoTone={"purpleToPink"}
+          disabled={publish || imageUploadProgress}
+        >
+          {publish ? (
+            <>
+              <Spinner size="sm" />
+              <span className="pl-3">Publishing...</span>
+            </>
+          ) : (
+            "Publish"
+          )}
         </Button>
+        {publishError && (
+          <Alert
+            className="py-3 mt-5"
+            color="failure"
+            icon={HiInformationCircle}
+          >
+            {publishError}
+          </Alert>
+        )}
       </form>
     </div>
   );
