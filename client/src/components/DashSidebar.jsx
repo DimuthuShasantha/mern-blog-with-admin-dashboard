@@ -5,6 +5,7 @@ import {
   HiDocumentText,
   HiUser,
 } from "react-icons/hi";
+import { FaUsers, FaComments } from "react-icons/fa6";
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { signOutFaluire, signOutSuccess } from "../redux/user/userSlice";
@@ -64,6 +65,32 @@ export default function DashSidebar() {
                 Posts
               </Sidebar.Item>
             </Link>
+          )}
+          {currentUser.isAdmin && (
+            <>
+              <Link to="/dashboard?tab=users">
+                <Sidebar.Item
+                  className="cursor-pointer"
+                  active={tab === "users"}
+                  icon={FaUsers}
+                  labelColor="dark"
+                  as={"div"}
+                >
+                  Users
+                </Sidebar.Item>
+              </Link>
+              <Link to="/dashboard?tab=comments">
+                <Sidebar.Item
+                  className="cursor-pointer"
+                  active={tab === "comments"}
+                  icon={FaComments}
+                  labelColor="dark"
+                  as={"div"}
+                >
+                  Comments
+                </Sidebar.Item>
+              </Link>
+            </>
           )}
 
           <Sidebar.Item

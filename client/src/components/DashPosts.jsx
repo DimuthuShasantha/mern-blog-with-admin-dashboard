@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { Modal, Table, TableBody, Button } from "flowbite-react";
+import { Modal, Table, TableBody, Button, TextInput } from "flowbite-react";
 import { Link } from "react-router-dom";
 import { set } from "mongoose";
 import { FaCircleExclamation } from "react-icons/fa6";
@@ -11,6 +11,7 @@ export default function DashPosts() {
   const [showMore, setShowMore] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [postIdToDelete, setPostIdToDelete] = useState("");
+  const [searchPost, setSearchPost] = useState("");
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -69,10 +70,31 @@ export default function DashPosts() {
       console.log(error.message);
     }
   };
+
+  const handleSearchPost = async (e) => {
+    setSearchPost(e.target.value);
+    const res = await fetch(
+      `api/post/getposts?userId=${currentUser._id}&searchTerm=${searchPost}`
+    );
+    const data = await res.json();
+    if (res.ok) {
+      setUserPosts(data.posts);
+      if (data.posts.length < 9) {
+        setShowMore(false);
+      } else {
+        setShowMore(true);
+      }
+    }
+  };
+
   return (
     <div className="p-3 overflow-x-scroll table-auto md:mx-auto scrollbar-track-slate-100 scrollbar-thumb-slate-300 dark:scrollbar-track-slate-700 dark:scrollbar-thumb-slate-500">
       {currentUser.isAdmin && userPosts.length > 0 ? (
         <>
+          <div className="flex justify-end my-3">
+            <TextInput placeholder="Search..." onChange={handleSearchPost} type="search" />
+          </div>
+
           <Table hoverable className="shadow-md">
             <Table.Head>
               <Table.HeadCell>Date Updated</Table.HeadCell>

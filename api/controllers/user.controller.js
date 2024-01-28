@@ -51,7 +51,7 @@ export const updateUser = async (req, res, next) => {
 };
 
 export const deleteUser = async (req, res, next) => {
-  if (req.user.id !== req.params.userId)
+  if (!req.user.isAdmin && req.user.id !== req.params.userId)
     return next(403, "You are not allowed to delete this account!");
   try {
     await User.findByIdAndDelete(req.params.userId);
@@ -61,7 +61,7 @@ export const deleteUser = async (req, res, next) => {
   }
 };
 
-export const signout = (req, res, next) => {
+export const signout = async (req, res, next) => {
   try {
     res
       .clearCookie("ACCESS_TOKEN")
@@ -69,5 +69,49 @@ export const signout = (req, res, next) => {
       .json("User has been signed out!");
   } catch (error) {
     nexr(error);
+  }
+};
+
+export const getUsers = async (req, res, next) => {
+  if (!req.user.isAdmin) return next(403, "Unautherized!");
+  try {
+    const startIndex = parseInt(req.query.startIndex) || 0;
+    const limit = parseInt(req.query.limit) || 9;
+    const sortDirection = req.query.sort === "asc" ? 1 : -1;
+
+    const users = await User.find({
+      ...(req.query.searchTerm && {
+        $or: [
+          { username: { $regex: req.query.searchTerm, $options: "i" } },
+          { email: { $regex: req.query.searchTerm, $options: "i" } },
+        ],
+      })
+    })
+      .sort({ createdAt: sortDirection })
+      .skip(startIndex)
+      .limit(limit);
+
+    const usersWithoutPassword = users.map((user) => {
+      const { password, ...rest } = user._doc;
+      return rest;
+    });
+
+    const totalUsers = await User.countDocuments();
+    const now = new Date();
+    const oneMonthAgo = new Date(
+      now.getFullYear(),
+      now.getMonth() - 1,
+      now.getDate()
+    );
+    const lastMonthUsers = await User.find({
+      createdAt: { $gte: oneMonthAgo },
+    });
+    res.status(200).json({
+      users: usersWithoutPassword,
+      totalUsers,
+      lastMonthUsers,
+    });
+  } catch (error) {
+    next(error);
   }
 };
