@@ -4,6 +4,7 @@ import { Modal, Table, TableBody, Button, TextInput } from "flowbite-react";
 import { Link } from "react-router-dom";
 import { set } from "mongoose";
 import { FaCircleExclamation } from "react-icons/fa6";
+// import Pagination from "./Pagination";
 
 export default function DashPosts() {
   const { currentUser } = useSelector((state) => state.user);
@@ -155,6 +156,7 @@ export default function DashPosts() {
               ))}
             </TableBody>
           </Table>
+          {/* <Pagination /> */}
           {showMore && (
             <button
               className="self-center w-full text-sm text-teal-500 py-7"
@@ -176,7 +178,7 @@ export default function DashPosts() {
         <Modal.Header />
         <Modal.Body>
           <div className="text-center">
-            <FaCircleExclamation className="mx-auto mb-4 text-gray-400 w-14 h-14 dark:text-gray-200" />
+            <FaCircleExclamation className="mx-auto mb-4 text-red-400 w-14 h-14 dark:text-gray-200" />
             <h3 className="mb-5 text-lg text-gray-500 dark:text-gray-400">
               Are you sure want to delete this post?
             </h3>

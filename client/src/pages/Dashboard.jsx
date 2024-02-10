@@ -14,7 +14,7 @@ export default function Dashboard() {
     tabFormUrl && setTab(tabFormUrl);
   }, [location.search]);
   return (
-    <div className="min-h-screen flex flex-col md:flex-row">
+    <div className="flex flex-col min-h-screen md:flex-row">
       <div className="md:w-56">
         <DashSidebar />
       </div>
