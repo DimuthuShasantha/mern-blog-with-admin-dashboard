@@ -52,18 +52,27 @@ export default function PostPage() {
                 {post && post.category}
               </Button>
             </Link>
-            <img src={post && post.image} alt={post && post.image} className="p-3 mt-10 max-h-[600px] object-cover w-full" />
+            <img
+              src={post && post.image}
+              alt={post && post.image}
+              className="p-3 mt-10 max-h-[600px] object-cover w-full"
+            />
             <div className="flex justify-between w-full max-w-2xl p-3 mx-auto text-xs border-b border-slate-500">
-                <span>{post && new Date(post.createdAt).toLocaleDateString()}</span>
-                <span className="italic">{post && (post.content.length / 1000).toFixed(0)} mins read</span>
+              <span>
+                {post && new Date(post.createdAt).toLocaleDateString()}
+              </span>
+              <span className="italic">
+                {post && (post.content.length / 1000).toFixed(0)} mins read
+              </span>
             </div>
-            <div className="w-full max-w-2xl p-3 mx-auto post-content" dangerouslySetInnerHTML={{ __html: post && post.content }}>
-                
-            </div>
+            <div
+              className="w-full max-w-2xl p-3 mx-auto post-content"
+              dangerouslySetInnerHTML={{ __html: post && post.content }}
+            ></div>
             <div className="w-full max-w-4xl mx-auto">
               <CallToAction />
             </div>
-            <CommentSection postId={"a"} />
+            <CommentSection postId={post && post._id} />
           </main>
         </div>
       )}
