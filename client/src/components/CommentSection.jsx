@@ -1,7 +1,7 @@
 import { Alert, Button, TextInput, Textarea } from "flowbite-react";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Comment from "./Comment";
 
 export default function CommentSection({ postId }) {
@@ -9,6 +9,7 @@ export default function CommentSection({ postId }) {
   const [commentError, setCommentError] = useState(null);
   const { currentUser } = useSelector((state) => state.user);
   const [comments, setComments] = useState([]);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     setCommentError(null);
@@ -55,6 +56,36 @@ export default function CommentSection({ postId }) {
     };
     getComments();
   }, [postId]);
+
+  const handleLike = async (commentId) => {
+    try {
+      if (!currentUser) {
+        navigate("/signin");
+        return;
+      }
+      const res = await fetch(`/api/comment/likeComment/${commentId}`, {
+        method: "PUT",
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setComments(
+          comments.map((comment) =>
+            comment._id === commentId
+              ? {
+                  ...comment,
+                  likes: data.likes,
+                  numberOfLikes: data.likes.length,
+                }
+              : comment
+          )
+        );
+      } else {
+        console.log(data.message);
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
 
   return (
     <div className="w-full max-w-2xl p-3 mx-auto">
@@ -111,17 +142,23 @@ export default function CommentSection({ postId }) {
         </>
       )}
       {comments.length === 0 ? (
-        <p className="text-sm my-5">No comments yet!</p>
+        <p className="my-5 text-sm">No comments yet!</p>
       ) : (
         <>
-          <div className="text-sm my-5 flex items-center gap-1">
+          <div className="flex items-center gap-1 my-5 text-sm">
             <p>Comments</p>
-            <div className="border border-gray-400 py-1 px-2 rounded-sm">
+            <div className="px-2 py-1 border border-gray-400 rounded-sm">
               <p>{comments.length}</p>
             </div>
           </div>
           {comments.map((comment) => {
-            return <Comment key={comment._id} comment={comment} />;
+            return (
+              <Comment
+                key={comment._id}
+                comment={comment}
+                onLike={handleLike}
+              />
+            );
           })}
         </>
       )}
