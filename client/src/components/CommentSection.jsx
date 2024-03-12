@@ -1,7 +1,8 @@
-import { Alert, Button, TextInput, Textarea } from "flowbite-react";
+import { Alert, Button, Modal, TextInput, Textarea } from "flowbite-react";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
+import { FaCircleExclamation } from "react-icons/fa6";
 import Comment from "./Comment";
 
 export default function CommentSection({ postId }) {
@@ -9,6 +10,8 @@ export default function CommentSection({ postId }) {
   const [commentError, setCommentError] = useState(null);
   const { currentUser } = useSelector((state) => state.user);
   const [comments, setComments] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState(null);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -95,6 +98,26 @@ export default function CommentSection({ postId }) {
     );
   };
 
+  const handleDelete = async (commentId) => {
+    setShowModal(false);
+    try {
+      if (!currentUser) {
+        navigate("/signin");
+        return;
+      }
+      const res = await fetch(`/api/comment/deleteComment/${commentId}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setComments(comments.filter((comment) => comment._id !== commentId));
+      } else {
+        console.log(data.message);
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
   return (
     <div className="w-full max-w-2xl p-3 mx-auto">
       {currentUser ? (
@@ -166,11 +189,42 @@ export default function CommentSection({ postId }) {
                 comment={comment}
                 onLike={handleLike}
                 onEdit={handleEdit}
+                onDelete={(commentId) => {
+                  setShowModal(true);
+                  setCommentToDelete(commentId);
+                }}
               />
             );
           })}
         </>
       )}
+      <Modal
+        show={showModal}
+        onClose={() => setShowModal(false)}
+        popup
+        size="md"
+      >
+        <Modal.Header />
+        <Modal.Body>
+          <div className="text-center">
+            <FaCircleExclamation className="mx-auto mb-4 text-red-400 w-14 h-14 dark:text-gray-200" />
+            <h3 className="mb-5 text-lg text-gray-500 dark:text-gray-400">
+              Are you sure want to delete this comment?
+            </h3>
+            <div className="flex justify-center gap-4">
+              <Button
+                color="failure"
+                onClick={() => handleDelete(commentToDelete)}
+              >
+                Yes, I am sure
+              </Button>
+              <Button color="gray" onClick={() => setShowModal(false)}>
+                No, Cancel
+              </Button>
+            </div>
+          </div>
+        </Modal.Body>
+      </Modal>
     </div>
   );
 }
