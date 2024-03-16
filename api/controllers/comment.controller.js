@@ -97,7 +97,7 @@ export const getcomments = async (req, res, next) => {
       .sort({ createdAt: sortDirection })
       .skip(startIndex)
       .limit(limit);
-    for (let i = 0; i < comments.length; i++) {
+    for (let i = 0; i < comments.length; i++) {  
       const comment = comments[i];
       const user = await User.findById(comment.userId);
       comment.userId = user ? user.username : "Unknown";
