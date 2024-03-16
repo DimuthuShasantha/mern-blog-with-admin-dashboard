@@ -103,7 +103,7 @@ export const getUsers = async (req, res, next) => {
       now.getMonth() - 1,
       now.getDate()
     );
-    const lastMonthUsers = await User.find({
+    const lastMonthUsers = await User.countDocuments({
       createdAt: { $gte: oneMonthAgo },
     });
     res.status(200).json({
