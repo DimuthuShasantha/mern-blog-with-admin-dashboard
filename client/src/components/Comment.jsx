@@ -40,7 +40,7 @@ export default function Comment({ comment, onLike, onEdit, onDelete }) {
         body: JSON.stringify({ content: editedContent }),
       });
       const data = await res.json();
-      if(res.ok) {
+      if (res.ok) {
         setIsEditing(false);
         onEdit(comment, editedContent);
       } else {
@@ -117,26 +117,25 @@ export default function Comment({ comment, onLike, onEdit, onDelete }) {
                     " " +
                     (comment.numberOfLikes === 1 ? "like" : "likes")}
               </p>
-              {((currentUser && currentUser._id === comment.userId) ||
-                currentUser.isAdmin) && (
+              {currentUser &&
+                (currentUser._id === comment.userId || currentUser.isAdmin) && (
                   <>
-                  <button
-                  type="button"
-                  className="text-gray-400 hover:text-blue-500"
-                  onClick={handleEdit}
-                >
-                  Edit
-                </button>
-                <button
-                  type="button"
-                  className="text-gray-400 hover:text-red-500"
-                  onClick={() => onDelete(comment._id)}
-                >
-                  Delete
-                </button>
+                    <button
+                      type="button"
+                      className="text-gray-400 hover:text-blue-500"
+                      onClick={handleEdit}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      className="text-gray-400 hover:text-red-500"
+                      onClick={() => onDelete(comment._id)}
+                    >
+                      Delete
+                    </button>
                   </>
-                
-              )}
+                )}
             </div>
           </>
         )}
