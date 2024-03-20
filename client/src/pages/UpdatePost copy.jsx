@@ -92,7 +92,7 @@ export default function UpdatePost() {
     try {
       setPublish(true);
       setPublishError(null);
-      const res = await fetch(`/api/post/updatepost/${postId}/${currentUser._id}`, {
+      const res = await fetch(`/api/post/updatepost/${formData._id}/${currentUser._id}`, {
         method: "PUT",
         headers: { "Content-type": "application/json" },
         body: JSON.stringify(formData),
